@@ -1,0 +1,28 @@
+#set working directory
+setwd("C:\\Users\\Tom\\Desktop\\Data Science Coursera")
+
+#read data 
+dataset_url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+download.file(dataset_url, "FNEI_data.zip")
+unzip("FNEI_data.zip", exdir = "pm25data")
+
+NEI <- readRDS("pm25data/summarySCC_PM25.rds")
+SCC <- readRDS("pm25data/Source_Classification_Code.rds")
+
+#1: Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? 
+#Using the base plotting system, make a plot showing the total PM2.5 emission from all 
+#sources for each of the years 1999, 2002, 2005, and 2008.
+
+library(dplyr)
+
+emission_by_year <- group_by(NEI, year)
+total_emission_by_year <- summarize(emission_by_year, Emissions = sum(Emissions))
+
+windows()
+with(total_emission_by_year, plot(x = year, y = Emissions/1000000, main = expression(paste("Total Emissions from ",  PM[2.5], " in the U.S. from 1999-2008")), xlab = "Year", ylab = "Emissions (Millions of tons)", pch = 20))
+model <- lm(Emissions/1000000 ~ year, total_emission_by_year)
+abline(model, lwd = 2)
+dev.copy(png, "plot1.png", width = 480, height = 480)
+dev.off()
+
+#Yes, total emissions from PM2.5 have decreased in the United States from 1999 to 2008
