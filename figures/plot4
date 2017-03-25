@@ -1,0 +1,40 @@
+#set working directory
+setwd("C:\\Users\\Tom\\Desktop\\Data Science Coursera")
+
+#read data 
+dataset_url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+download.file(dataset_url, "FNEI_data.zip")
+unzip("FNEI_data.zip", exdir = "pm25data")
+
+NEI <- readRDS("pm25data/summarySCC_PM25.rds")
+SCC <- readRDS("pm25data/Source_Classification_Code.rds")
+
+#4: Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
+
+library(dplyr)
+library(ggplot2)
+
+SCC$Levels.One.Through.Four <- paste0(SCC$SCC.Level.One, SCC$SCC.Level.Two, SCC$SCC.Level.Three, SCC$SCC.Level.Four)
+
+combustion <- grepl("Combustion", SCC$Levels.One.Through.Four, ignore.case = TRUE)
+coal <- grepl("Coal", SCC$Levels.One.Through.Four, ignore.case = TRUE)
+
+combustion_SCC <- SCC[combustion,]$SCC
+coal_SCC <- SCC[coal,]$SCC
+
+combustion_coal_SCC <- intersect(combustion_SCC, coal_SCC)
+combustion_coal_NEI <- subset(NEI, SCC %in% combustion_coal_SCC)
+
+combustion_coal_emission_by_year <- group_by(combustion_coal_NEI, year)
+combustion_coal_total_emission_by_year <- summarize(combustion_coal_emission_by_year, Emissions = sum(Emissions))
+
+g <- qplot(x = year, y = Emissions/1000000, data = combustion_coal_total_emission_by_year)
+
+windows()
+g + labs(x = "Year", y = "Emissions (Millions of tons)") + 
+  labs(title = expression(paste("Total Coal Combustion Source Emissions from ",  PM[2.5], " in the U.S. from 1999-2008"))) + 
+  geom_smooth(method = "lm", se = FALSE)
+dev.copy(png, "plot4.png", width = 480, height = 480)
+dev.off()
+
+#Emissions from coal combustion-related sources have decreased across the United States from 1999-2008
