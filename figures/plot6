@@ -16,15 +16,22 @@ SCC <- readRDS("pm25data/Source_Classification_Code.rds")
 library(dplyr)
 library(ggplot2)
 
+Baltimore_City_MD <- subset(NEI, fips == "24510")
 Los_Angeles_County_CA <- subset(NEI, fips == "06037")
 
+motor_vehicles_SCC <- SCC[motor_vehicles,]$SCC
+
+motor_vehicles_Baltimore_City_MD_NEI <- subset(Baltimore_City_MD, SCC %in% motor_vehicles_SCC)
 motor_vehicles_Los_Angeles_County_CA_NEI <- subset(Los_Angeles_County_CA, SCC %in% motor_vehicles_SCC)
+
+Baltimore_City_MD_motor_vehicles_emission_by_year <- group_by(motor_vehicles_Baltimore_City_MD_NEI, year)
+Baltimore_City_MD_motor_vehicles_total_emission_by_year <- summarize(Baltimore_City_MD_motor_vehicles_emission_by_year, Emissions = sum(Emissions))
 
 Los_Angeles_CA_motor_vehicles_emission_by_year <- group_by(motor_vehicles_Los_Angeles_County_CA_NEI, year)
 Los_Angeles_CA_motor_vehicles_total_emission_by_year <- summarize(Los_Angeles_CA_motor_vehicles_emission_by_year, Emissions = sum(Emissions))
 
-Los_Angeles_CA_motor_vehicles_total_emission_by_year$County <- "Los Angeles County, California"
 Baltimore_City_MD_motor_vehicles_total_emission_by_year$County <- "Baltimore City, Maryland"
+Los_Angeles_CA_motor_vehicles_total_emission_by_year$County <- "Los Angeles County, California"
 
 CompareCounties <- rbind(Los_Angeles_CA_motor_vehicles_total_emission_by_year, Baltimore_City_MD_motor_vehicles_total_emission_by_year)
 
@@ -38,4 +45,4 @@ g + facet_grid(.~County) +
 dev.copy(png, "plot6.png", width = 480, height = 480)
 dev.off()
 
-#Los Angeles County has seen greater changes over time compared to Baltimore City in motor vehicle emissions
+#Los Angeles County has seen greater changes in motor vehicle emissions over time compared to Baltimore City 
