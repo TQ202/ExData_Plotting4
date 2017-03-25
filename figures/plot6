@@ -1,0 +1,38 @@
+#set working directory
+setwd("C:\\Users\\Tom\\Desktop\\Data Science Coursera")
+
+#read data 
+dataset_url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+download.file(dataset_url, "FNEI_data.zip")
+unzip("FNEI_data.zip", exdir = "pm25data")
+
+NEI <- readRDS("pm25data/summarySCC_PM25.rds")
+SCC <- readRDS("pm25data/Source_Classification_Code.rds")
+
+#6: Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle 
+#sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time 
+#in motor vehicle emissions?
+
+Los_Angeles_County_CA <- subset(NEI, fips == "06037")
+
+motor_vehicles_Los_Angeles_County_CA_NEI <- subset(Los_Angeles_County_CA, SCC %in% motor_vehicles_SCC)
+
+Los_Angeles_CA_motor_vehicles_emission_by_year <- group_by(motor_vehicles_Los_Angeles_County_CA_NEI, year)
+Los_Angeles_CA_motor_vehicles_total_emission_by_year <- summarize(Los_Angeles_CA_motor_vehicles_emission_by_year, Emissions = sum(Emissions))
+
+Los_Angeles_CA_motor_vehicles_total_emission_by_year$County <- "Los Angeles County, California"
+Baltimore_City_MD_motor_vehicles_total_emission_by_year$County <- "Baltimore City, Maryland"
+
+CompareCounties <- rbind(Los_Angeles_CA_motor_vehicles_total_emission_by_year, Baltimore_City_MD_motor_vehicles_total_emission_by_year)
+
+g <- qplot(x = year, y = Emissions, data = CompareCounties)
+
+windows()
+g + facet_grid(.~County) + 
+  labs(x = "Year", y = "Emissions (tons)") + 
+  labs(title = expression(paste("Total Motor Vehicle Source Emissions from ", PM[2.5], " in each county from 1999-2008"))) + 
+  geom_smooth(method = "lm", se = FALSE)
+dev.copy(png, "plot6.png", width = 480, height = 480)
+dev.off()
+
+#Los Angeles County has seen greater changes over time compared to Baltimore City in motor vehicle emissions
