@@ -1,0 +1,29 @@
+#set working directory
+setwd("C:\\Users\\Tom\\Desktop\\Data Science Coursera")
+
+#read data 
+dataset_url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+download.file(dataset_url, "FNEI_data.zip")
+unzip("FNEI_data.zip", exdir = "pm25data")
+
+NEI <- readRDS("pm25data/summarySCC_PM25.rds")
+SCC <- readRDS("pm25data/Source_Classification_Code.rds")
+
+#2: Have total emissions from PM2.5 decreased in Baltimore City, Maryland (fips == "24510") 
+#from 1999 to 2008? Use the base plotting system to make a plot answering this question.
+
+library(dplyr)
+
+Baltimore_City_MD <- subset(NEI, fips == "24510")
+
+Baltimore_City_MD_emission_by_year <- group_by(Baltimore_City_MD, year)
+Baltimore_City_MD_total_emission_by_year <- summarize(Baltimore_City_MD_emission_by_year, Emissions = sum(Emissions))
+
+windows()
+with(Baltimore_City_MD_total_emission_by_year, plot(x = year, y = Emissions, main = expression(paste("Total Emissions from ",  PM[2.5], " in Baltimore County from 1999-2008")), xlab = "Year", ylab = "Emissions (tons)", pch = 20))
+model <- lm(Emissions ~ year, Baltimore_City_MD_total_emission_by_year)
+abline(model, lwd = 2)
+dev.copy(png, "plot2.png", width = 480, height = 480)
+dev.off()
+
+#Yes, total emissions from PM2.5 have decreased in Baltimore City, Maryland from 1999 to 2008
