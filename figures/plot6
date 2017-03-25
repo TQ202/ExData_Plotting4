@@ -13,6 +13,9 @@ SCC <- readRDS("pm25data/Source_Classification_Code.rds")
 #sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time 
 #in motor vehicle emissions?
 
+library(dplyr)
+library(ggplot2)
+
 Los_Angeles_County_CA <- subset(NEI, fips == "06037")
 
 motor_vehicles_Los_Angeles_County_CA_NEI <- subset(Los_Angeles_County_CA, SCC %in% motor_vehicles_SCC)
