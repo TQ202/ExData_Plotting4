@@ -1,0 +1,33 @@
+#set working directory
+setwd("C:\\Users\\Tom\\Desktop\\Data Science Coursera")
+
+#read data 
+dataset_url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+download.file(dataset_url, "FNEI_data.zip")
+unzip("FNEI_data.zip", exdir = "pm25data")
+
+NEI <- readRDS("pm25data/summarySCC_PM25.rds")
+SCC <- readRDS("pm25data/Source_Classification_Code.rds")
+
+#3: Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, 
+#which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? 
+#Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a 
+#plot answer this question.
+
+library(dplyr)
+library(ggplot2)
+
+Baltimore_City_MD_emission_by_year_type <- group_by(Baltimore_City_MD, year, type)
+Baltimore_City_MD_total_emission_by_year_type <- summarize(Baltimore_City_MD_emission_by_year_type, Emissions = sum(Emissions))
+
+g <- qplot(x = year, y = Emissions, data = Baltimore_City_MD_total_emission_by_year_type)
+
+windows()
+g + facet_grid(.~type) + 
+  labs(x = "Year", y = "Emissions (tons)") + 
+  labs(title = expression(paste("Total Emissions from ",  PM[2.5], " in Baltimore County by Type from 1999-2008"))) + 
+  geom_smooth(method = "lm", se = FALSE)
+dev.copy(png, "plot3.png", width = 480, height = 480)
+dev.off()
+
+#Of the four types of sources, all but the point variable have seen decreases in emissions from 1999 to 2008 in Baltimore City
